@@ -13,8 +13,7 @@ function AgeBasedScheduler() {
             {
                 name:serviceName,
                 url: url,
-                age: age,
-                callback: callback
+                age: age
             }
         );
     };
