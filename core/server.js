@@ -6,9 +6,8 @@ express = require('express'),
 purecloud = require('./purecloud.js')
 userDataStore = require('./userDataStore.js');
 
-var recurringScheduler = require('./recurringScheduler');
-var ageScheduler = require('./ageBasedScheduler');
 var ageSchedulerRoute = require('./routes/ageScheduler');
+var recurringSchedulerRoute = require('./routes/recurringScheduler');
 
 var app = express();
 
@@ -16,6 +15,7 @@ app.use(express.static(__dirname));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded());
 app.use(ageSchedulerRoute);
+app.use(recurringSchedulerRoute);
 
 app.set('port', (process.env.PORT || 8080));
 

@@ -17,6 +17,7 @@ function RecurringScheduler() {
                 lastExecution: null
             }
         );
+        callback("Successfully registered");
     };
 
     function _onUserDataStoreUpdate(data){
