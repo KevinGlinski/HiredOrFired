@@ -9,13 +9,14 @@ function AgeBasedScheduler() {
 
     this.addAgeBasedRegistrant = function(serviceName, url, age, callback){
         logger.log("Added registrant " + serviceName + " at " + url + " with trigger date " + age);
-        ageBasedRegistrants.add(
+        ageBasedRegistrants.push(
             {
                 name:serviceName,
                 url: url,
                 age: age
             }
         );
+        callback("Successfully registered");
     };
 
     function onUserDataStoreUpdate(data){

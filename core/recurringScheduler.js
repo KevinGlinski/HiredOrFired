@@ -9,7 +9,7 @@ function RecurringScheduler() {
 
     this.addRecurrentRegistrant = function(serviceName, url, frequency, callback){
         logger.log("Added registrant " + serviceName + " at " + url + " with frequency " + frequency);
-        recurringRegistrants.add(
+        recurringRegistrants.push(
             {
                 name:serviceName,
                 url: url,
@@ -56,7 +56,7 @@ function RecurringScheduler() {
         for (var i = 0; i < recurringRegistrants.length; i++) {
             if (recurringRegistrants[i]["lastExecution"] === null) {
                 logger.log("Adding " + recurringRegistrants[i].name + " as new registrant to process");
-                newRegistrants.add(recurringRegistrants[i]);
+                newRegistrants.push(recurringRegistrants[i]);
             }
         }
         return newRegistrants;
@@ -73,7 +73,7 @@ function RecurringScheduler() {
             if(daysSinceExecution == element.frequency){
                 //We need to process
                 logger.log("Adding " + element.name + " as registrant to process");
-                dueRegistrants.add(element);
+                dueRegistrants.push(element);
             }
         });
         return dueRegistrants;
