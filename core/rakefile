@@ -1,0 +1,6 @@
+task :cleandb => do
+    #mongodb://192.168.99.100:32769/hiredorfired
+  Mongo::Client.new([ '192.168.99.100:32769' ], :database => 'hiredorfired')
+  
+
+end
