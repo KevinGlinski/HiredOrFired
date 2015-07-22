@@ -1,5 +1,6 @@
-var request = require('request')
-var userDiff = require('./userDiff.js')
+var request = require('request');
+var userDiff = require('./userDiff.js');
+var logger = require('../utils/traceLogger');
 
 var base_uri = "https://public--api-us--east--1-inindca-com-7a1o6tnlzr5h.runscope.net" ;
 //var base_uri =  "https://public-api.us-east-1.ininsca.com";
@@ -67,7 +68,7 @@ function getPureCloudUsers(callback){
 }
 
 function diffUsers(){
-    console.log("checking users");
+    logger.log("checking users");
 
     getPureCloudUsers(function(pureCloudUsers){
         userDiff(pureCloudUsers, userDataStore);
@@ -80,7 +81,7 @@ module.exports = {
         userDataStore = userData;
 
         if(user == null || password == null || user == "" || password == ""){
-            console.error("PureCloud user or password is not set!");
+            logger.log("PureCloud user or password is not set!");
             return;
         }
 
