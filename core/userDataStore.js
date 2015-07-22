@@ -13,7 +13,7 @@ if (url) {
         logger.log("Connected correctly to MongoDB");
         userCollection = db.collection('users');
         intervalCollection = db.collection('intervals');
-        db.close();
+        //db.close();
     });
 }
 
