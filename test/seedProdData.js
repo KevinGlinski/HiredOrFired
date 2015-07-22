@@ -10,36 +10,37 @@ var parser = csv.parse({delimiter: ';'}, function(err, data){
 var files = [
     {
         name:"usersMay2210am.lst",
-        date:"1432303200"
+        date:new Date(2015,4,22,10)
     },
     {
         name:"usersMay269am.lst",
-        date:"1432645200"
+        date:new Date(2015,4,26,9)
+    },
+
+    {
+        name:"usersJun1730am.lst",
+        date:new Date(2015,5,1,7)
     },
     {
         name:"usersJun083pm.lst",
-        date:"1433790000"
-    },
-    {
-        name:"usersJun1730am.lst",
-        date:"1433156400"
+        date:new Date(2015,5,8,15)
     },
     {
         name:"usersJun123pm.lst",
-        date:"1434135600"
+        date: new Date(2015,5,12,15)
     },
 
     {
         name:"usersJun1811am.lst",
-        date:"1434639600"
+        date:new Date(2015,5,18,11)
     },
     {
         name:"usersJul02_815am.lst",
-        date:"1435849200"
+        date:new Date(2015,6,2,8)
     },
     {
         name:"usersJul107am.lst",
-        date:"1436526000"
+        date:new Date(2015,6,10,7)
     },
 ]
 
@@ -54,10 +55,10 @@ function processFile(index){
         return;
     }
 
-    var file = files[index];
+    var userFile = files[index];
 
-    console.log("liz Processing file " + file.name);
-    var lr = new LineByLineReader(__dirname+'/prodSeedData/'+ file.name);
+    console.log("Processing file " + userFile.name + " " + userFile.date);
+    var lr = new LineByLineReader(__dirname+'/prodSeedData/'+ userFile.name);
     var users = [];
     lr.on('line', function (line) {
         //console.log(line.replace(";", "!"));
@@ -67,9 +68,13 @@ function processFile(index){
             email: lineData[3],
             department: lineData[1],
             title: lineData[2],
-            added: file.date,
+            metaAdded: JSON.stringify(userFile.date),
+            added: userFile.date.getTime(),
             removed: null
         }
+
+        console.log(lineData[3] + "- "+ userFile.date + ' - ' + userFile.name)
+
         users.push(user);
 
     });
@@ -80,6 +85,8 @@ function processFile(index){
         });
 
     });
+
+    console.log(users);
 }
 
 setTimeout(function() {

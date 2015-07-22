@@ -17,7 +17,7 @@ hiredOrFired.controller('ChartController', function($scope, $rootScope, userServ
     function refresh(){
         userService.getUsersPerInterval($scope.startDate, $scope.endDate, $scope.interval, function(data){
             $scope.labels = data.days;
-            $scope.date = data.values;
+            $scope.data = data.values;
             $scope.series = ['Employee Count']
         });
     }
