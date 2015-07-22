@@ -1,11 +1,12 @@
 var mongoClient = require('mongodb').MongoClient;
 var userStore = require('./userDataStore');
 var logger = require('../utils/traceLogger');
+var request = require('request');
 
 function AgeBasedScheduler() {
     var ageBasedRegistrants = [];
     var mongoConnectString = process.env.MONGO_DB;//'mongodb://192.168.99.100:32769/hiredorfired';
-    var mongoCollectionName = "users";
+    var mongoCollectionName = "intervals";
 
     this.addRegistrant = function(serviceName, url, age, callback){
         logger.log("Added registrant " + serviceName + " at " + url + " with trigger date " + age);
@@ -43,25 +44,25 @@ function AgeBasedScheduler() {
         logger.log("Checking registrant: " + element.name);
 
         var daysAgo = element.age;
-        var data = _getDataForPastDay(daysAgo);
-
-        if (data.length > 0) {
-            request({
-                url: element.url,
-                method: 'POST',
-                body: data,
-                json: true
-            }, function (error, response, body) {
-                if (error) {
-                    logger.log("Error: " + error);
-                } else {
-                    logger.log("Successfully notified registrant " + element.name);
-                }
-            });
-        }
+        _getDataForPastDay(daysAgo, function(data, err){
+            if (data.length > 0) {
+                request({
+                    url: element.url,
+                    method: 'POST',
+                    body: data,
+                    json: true
+                }, function (error, response, body) {
+                    if (error) {
+                        logger.log("Error: " + error);
+                    } else {
+                        logger.log("Successfully notified registrant " + element.name);
+                    }
+                });
+            }
+        });
     }
 
-    function _getDataForPastDay(daysAgo) {
+    function _getDataForPastDay(daysAgo, callback) {
         logger.log("Getting data from " + daysAgo + " days ago")
 
         if(!mongoConnectString){
@@ -71,22 +72,25 @@ function AgeBasedScheduler() {
 
         mongoClient.connect(mongoConnectString, function (err, db) {
             if (err) {
-                return logger.log(err);
+                logger.log(err);
+                return;
             }
             var collection = db.collection(mongoCollectionName);
+            var oneDayMilliSeconds = 86400000;
+            var startDate = Date.now();//milliseconds since epoch
+            startDate = startDate - (startDate % oneDayMilliSeconds); //This is the previous midnight.
+            startDate = parseFloat(startDate - (daysAgo * oneDayMilliSeconds)); //convert days to seconds.
+            logger.log("Getting intervals since " + startDate);
 
-            var startDate = new Date();
-            startDate.setDate(startDate.getDate() - daysAgo);
-
-            collection.find({"date": startDate }).toArray(function(err, results){
+            collection.find({"date": {$gt: startDate, $lt: startDate + oneDayMilliSeconds}}).toArray(function(err, results){
                 if (err){
                     logger.log("Error : " + err);
                 }
                 logger.log("Found result set of length: " + results.length);
                 if(results) {
-                    return results;
+                    callback(results);
                 }
-                else return [];
+                else callback([]);
             });
         });
     }

@@ -1,5 +1,8 @@
 module.exports = function(pureCloudUsers, userDataStore, callback, endDate){
         userDataStore.getAllUsers(function(userStoreUsers){
+            var hiredList = [];
+            var firedList = [];
+
             for (var p=0;p<pureCloudUsers.length; p++){
                 var pureCloudUser = pureCloudUsers[p];
                 var foundUserInDataStore = false;
@@ -10,7 +13,6 @@ module.exports = function(pureCloudUsers, userDataStore, callback, endDate){
                         foundUserInDataStore = true;
                         userStoreUsers.splice(d,1);
                         d = userStoreUser.length + 1;
-
                     }
                 }
 
@@ -22,6 +24,7 @@ module.exports = function(pureCloudUsers, userDataStore, callback, endDate){
 
                     pureCloudUser.removed = null;
                     userDataStore.addUser(pureCloudUser);
+                    hiredList.push(pureCloudUser);
                 }
             }
 
@@ -36,13 +39,27 @@ module.exports = function(pureCloudUsers, userDataStore, callback, endDate){
                     else{
                         userStoreUser.removed = new Date().getTime();
                     }
+
                     userDataStore.updateUser(userStoreUser);
+                    firedList.push(pureCloudUser);
                 }
             }
+
+            _addIntervalData();
 
             if(callback){
                 callback();
             }
             userDataStore.updateCompleted();
+
+            function _addIntervalData(){
+                var interval = {
+                    date : Date.now(),
+                    hired : hiredList,
+                    fired : firedList
+                };
+
+                userDataStore.addInterval(interval);
+            }
         });
     };

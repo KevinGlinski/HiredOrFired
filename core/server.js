@@ -14,6 +14,7 @@ app.use(express.static(__dirname));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded());
 app.use(scheduler);
+app.use(require('./routes/testRoutes'));
 
 app.set('port', (process.env.PORT || 8080));
 

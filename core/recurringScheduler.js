@@ -1,11 +1,12 @@
 var mongoClient = require('mongodb').MongoClient;
 var userStore = require('./userDataStore');
 var logger = require('../utils/traceLogger');
+var request = require('request');
 
 function RecurringScheduler() {
     var recurringRegistrants = [];
     var mongoConnectString = process.env.MONGO_DB;//'mongodb://192.168.99.100:32769/hiredorfired';
-    var mongoCollectionName = "users";
+    var mongoCollectionName = "intervals";
 
     this.addRegistrant = function(serviceName, url, frequency, callback){
         logger.log("Added registrant " + serviceName + " at " + url + " with frequency " + frequency);
@@ -38,7 +39,7 @@ function RecurringScheduler() {
         logger.scope();
         //Check recurring registrants for things to send
         var newRegistrants = _findNewRegistrants();
-        var dueRegistrants = _findDueRegistrants(new Date());
+        var dueRegistrants = _findDueRegistrants(Date.now());
         var registrantsToProcess = newRegistrants.concat(dueRegistrants);
         _processUpdatesForRegistrants(registrantsToProcess)
     }
@@ -47,22 +48,27 @@ function RecurringScheduler() {
         logger.scope();
         registrants.forEach(function processForRegistrant(element){
             logger.log("Processing update for registrant by name "+ element.name );
-            var data = _getDataFromDaysAgo(element.frequency);
-
-            if (data.length > 0) {
-                request({
-                    url: element.url,
-                    method: 'POST',
-                    body: data,
-                    json: true
-                }, function (error, response, body) {
-                    if (error) {
-                        logger.log("Error: " + error);
-                    } else {
-                        logger.log("Successfully notified registrant " + element.name);
-                    }
-                });
-            }
+            _getDataFromDaysAgo(element.frequency, function(data, err){
+                if (err){
+                    logger.log("Error getting data for notification. Not sending update to registrant");
+                }
+                logger.log("Sending notification to registrant by name "+ element.name );
+                if (data.length > 0) {
+                    request({
+                        url: element.url,
+                        method: 'POST',
+                        body: data,
+                        json: true
+                    }, function (error, response, body) {
+                        if (error) {
+                            logger.log("Error: " + error);
+                        } else {
+                            logger.log("Successfully notified registrant " + element.name);
+                            element.lastExecution = Date.now();
+                        }
+                    });
+                }
+            });
         });
     }
 
@@ -99,20 +105,22 @@ function RecurringScheduler() {
 
     function _getDaysBetween(firstDate, secondDate){
         var oneDay = 24*60*60*1000; // hours*minutes*seconds*milliseconds
-        return Math.round(Math.abs((firstDate.getTime() - secondDate.getTime())/(oneDay)));
+        return Math.ceil(Math.abs((firstDate - secondDate)/(oneDay)));
     }
 
-    function _getDataFromDaysAgo(numDays) {
+    function _getDataFromDaysAgo(numDays, callback) {
         logger.scope();
-        mongoClient.connect(mongoConnectString, function (err, db) {
+        mongoClient.connect(mongoConnectString, function mongoResult(err, db) {
             if (err) {
                 logger.log(err);
-                return;
+                callback([], err);
             }
             var collection = db.collection(mongoCollectionName);
 
-            var startDate = new Date();
-            startDate.setDate(startDate.getDate() - numDays);
+            var startDate = Date.now();//milliseconds since epoch
+            startDate = parseFloat(startDate - (numDays * 86400000)); //convert days to milliseconds.
+            logger.log("Getting intervals since " + startDate);
+            var results = [];
 
             collection.find({"date": { $gte: startDate }}).toArray(function (err, results) {
                 if (err) {
@@ -120,9 +128,9 @@ function RecurringScheduler() {
                 }
                 logger.log("Found result set of length: " + results.length);
                 if (results) {
-                    return results;
+                    return callback(results);
                 }
-                else return [];
+                else callback([]);
             });
         });
     }
