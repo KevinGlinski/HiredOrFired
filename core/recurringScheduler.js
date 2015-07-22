@@ -1,49 +1,100 @@
+var mongoClient = require('mongodb').MongoClient;
 var userStore = require('./userDataStore');
 var logger = require('../utils/traceLogger');
 
 function RecurringScheduler() {
     var recurringRegistrants = [];
+    var mongoConnectString = process.env.MONGO_DB;//'mongodb://192.168.99.100:32769/hiredorfired';
+    var mongoCollectionName = "users";
 
-    this.addRecurrentRegistrant = function(serviceName, url, frequency, callback){
+    this.addRegistrant = function(serviceName, url, frequency, callback){
         logger.log("Added registrant " + serviceName + " at " + url + " with frequency " + frequency);
-        recurringRegistrants.add(
+        recurringRegistrants.push(
             {
                 name:serviceName,
                 url: url,
                 frequency: frequency,
-                callback: callback,
                 lastExecution: null
             }
         );
+        callback("Successfully registered");
     };
 
-    function onUserDataStoreUpdate(data){
+    this.removeRegistrant = function(serviceName, callback){
+        logger.log("Removing registrant " + serviceName);
+        for(var i = 0; i < recurringRegistrants.length; i++){
+            if (recurringRegistrants[i].name = serviceName){
+                var url = recurringRegistrants[i].url;
+                recurringRegistrants.splice(i, 1);
+                callback("Successfully removed registrant " + serviceName + " at url " + url);
+                return;
+            }
+        }
+        callback("No service found with name " + serviceName);
+    };
+
+
+    function _onUserDataStoreUpdate(){
         logger.scope();
         //Check recurring registrants for things to send
         var newRegistrants = _findNewRegistrants();
-        var dueRegistrants = _findDueRegistrants(data.date);
-    };
+        var dueRegistrants = _findDueRegistrants(new Date());
+        var registrantsToProcess = newRegistrants.concat(dueRegistrants);
+        _processUpdatesForRegistrants(registrantsToProcess)
+    }
+
+    function _processUpdatesForRegistrants(registrants){
+        logger.scope();
+        registrants.forEach(function processForRegistrant(element){
+            logger.log("Processing update for registrant by name "+ element.name );
+            var data = _getDataFromDaysAgo(element.frequency);
+
+            if (data.length > 0) {
+                request({
+                    url: element.url,
+                    method: 'POST',
+                    body: data,
+                    json: true
+                }, function (error, response, body) {
+                    if (error) {
+                        logger.log("Error: " + error);
+                    } else {
+                        logger.log("Successfully notified registrant " + element.name);
+                    }
+                });
+            }
+        });
+    }
 
     function _findNewRegistrants(){
+        logger.scope();
         var newRegistrants = [];
         for (var i = 0; i < recurringRegistrants.length; i++) {
             if (recurringRegistrants[i]["lastExecution"] === null) {
-                newRegistrants.add(recurringRegistrants[i]);
+                logger.log("Adding " + recurringRegistrants[i].name + " as new registrant to process");
+                newRegistrants.push(recurringRegistrants[i]);
             }
         }
         return newRegistrants;
     }
 
     function _findDueRegistrants(dataDate){
+        logger.scope();
         var dueRegistrants = [];
         recurringRegistrants.forEach(function(element, index, arr){
             var lastRanDate = element.lastExecution;
-            var daysSinceExecution = _getDaysBetween(lastRanDate, dataDate);
-            if(daysSinceExecution == element.frequency){
-                //We need to process
+            if(lastRanDate) {
+                var daysSinceExecution = _getDaysBetween(lastRanDate, dataDate);
 
+                logger.log("Days Since: " + daysSinceExecution + " Target Days: " + element.frequency);
+                if (daysSinceExecution == element.frequency) {
+                    //We need to process
+                    logger.log("Adding " + element.name + " as registrant to process");
+                    dueRegistrants.push(element);
+                }
             }
-        })
+        });
+        return dueRegistrants;
     }
 
     function _getDaysBetween(firstDate, secondDate){
@@ -51,29 +102,32 @@ function RecurringScheduler() {
         return Math.round(Math.abs((firstDate.getTime() - secondDate.getTime())/(oneDay)));
     }
 
-
+    function _getDataFromDaysAgo(numDays) {
+        logger.scope();
         mongoClient.connect(mongoConnectString, function (err, db) {
             if (err) {
-                return logger.log(err);
+                logger.log(err);
+                return;
             }
             var collection = db.collection(mongoCollectionName);
 
             var startDate = new Date();
-            startDate.setDate(startDate.getDate() - daysAgo);
+            startDate.setDate(startDate.getDate() - numDays);
 
-            collection.find({"date": { $gte: startDate }}).toArray(function(err, results){
-                if (err){
+            collection.find({"date": { $gte: startDate }}).toArray(function (err, results) {
+                if (err) {
                     logger.log("Error : " + err);
                 }
                 logger.log("Found result set of length: " + results.length);
-                if(results) {
+                if (results) {
                     return results;
                 }
                 else return [];
             });
         });
+    }
 
-   // userStore.onDataUpdate(onUserDataStoreUpdate);
+    userStore.onDataUpdated(_onUserDataStoreUpdate);
 };
 
 module.exports =  new RecurringScheduler ();

@@ -1,19 +1,24 @@
-
+var logger = require('../utils/traceLogger');
 var MongoClient = require('mongodb').MongoClient;
 
 // Connection URL
 var url = process.env.MONGO_DB;//'mongodb://192.168.99.100:32769/hiredorfired';
 var userCollection = null;
+var updateListeners = [];
+
 if (url) {
+    logger.log("Attempting mongo connection");
     MongoClient.connect(url, function (err, db) {
-        console.log("Connected correctly to MongoDB");
+        logger.log("Connected correctly to MongoDB");
         userCollection = db.collection('users');
         //db.close();
     });
 }
 
 function findUser (email, callback){
-    userCollection.findOne({email:email}, callback);
+    if(userCollection) {
+        userCollection.findOne({email: email}, callback);
+    }
 }
 
 module.exports = {
@@ -21,9 +26,11 @@ module.exports = {
 
     },
     getAllUsers:function(callback){
-        userCollection.find().toArray(function(err, users) {
-            callback(users);
-          });
+        if(userCollection) {
+            userCollection.find().toArray(function (err, users) {
+                callback(users);
+            });
+        }
     },
     addUser:function(user){
         userCollection.insertOne(user);
@@ -32,6 +39,11 @@ module.exports = {
         userCollection.updateOne({email:user.email}, user);
     },
     onDataUpdated: function(callback){
-        //Todo
+        updateListeners.push(callback);
+    },
+    updateCompleted: function(){
+        updateListeners.forEach(function(element, index, arr){
+            element();
+        });
     }
 }

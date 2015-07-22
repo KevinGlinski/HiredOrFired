@@ -38,5 +38,6 @@ module.exports = function(pureCloudUsers, userDataStore, callback){
             if(callback){
                 callback();
             }
+            userDataStore.updateCompleted();
         });
     };

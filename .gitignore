@@ -31,4 +31,7 @@ node_modules/
 # Webstorm Files
 .idea/*
 
+# Vagrant Files
+.vagrant/*
+
 dump.rb
