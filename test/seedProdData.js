@@ -82,7 +82,7 @@ function processFile(index){
     lr.on('end', function () {
         userDiff(users, userDataStore, function(){
             processFile(index+1);
-        });
+        }, userFile.date.getTime());
 
     });
 

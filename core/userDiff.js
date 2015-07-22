@@ -1,4 +1,4 @@
-module.exports = function(pureCloudUsers, userDataStore, callback){
+module.exports = function(pureCloudUsers, userDataStore, callback, endDate){
         userDataStore.getAllUsers(function(userStoreUsers){
             for (var p=0;p<pureCloudUsers.length; p++){
                 var pureCloudUser = pureCloudUsers[p];
@@ -17,7 +17,7 @@ module.exports = function(pureCloudUsers, userDataStore, callback){
                 if(!foundUserInDataStore){
                     console.log("adding new user " + pureCloudUser.email);
                     if(!pureCloudUser.added){
-                        pureCloudUser.added = Date.now();
+                        pureCloudUser.added = Date.now().getTime();
                     }
 
                     pureCloudUser.removed = null;
@@ -30,7 +30,12 @@ module.exports = function(pureCloudUsers, userDataStore, callback){
                 if(userStoreUser.removed == null)
                 {
                     console.log("user deleted " + userStoreUser.email);
-                    userStoreUser.removed = new Date();
+                    if(endDate){
+                        userStoreUser.removed = endDate;
+                    }
+                    else{
+                        userStoreUser.removed = new Date().getTime();
+                    }
                     userDataStore.updateUser(userStoreUser);
                 }
             }

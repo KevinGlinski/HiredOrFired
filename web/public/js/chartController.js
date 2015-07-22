@@ -16,8 +16,36 @@ hiredOrFired.controller('ChartController', function($scope, $rootScope, userServ
 
     function refresh(){
         userService.getUsersPerInterval($scope.startDate, $scope.endDate, $scope.interval, function(data){
-            $scope.labels = data.days;
-            $scope.data = data.values;
+
+            var days=[];
+            var values =[];
+
+            var sum =0;
+
+            for(var x= 0; x< data.length; x++){
+                if(x != data.length -1){
+            //
+
+                    var date = new Date(data[x].day);
+                    var nextdate =  new Date(data[x+1].day);
+
+                    if(date.getTime() == nextdate.getTime()){
+                        days.push(new Date(data[x].day).toDateString());
+                        values.push(sum + data[x+1].count + data[x].count);
+                        x++;
+                    }else{
+                        days.push(new Date(data[x].day).toDateString());
+                        values.push(sum + data[x].count);
+                    }
+
+                            sum += data[x].count;
+                }
+
+            }
+
+
+            $scope.labels = days;
+            $scope.data = [values];
             $scope.series = ['Employee Count']
         });
     }
