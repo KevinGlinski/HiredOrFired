@@ -7,7 +7,7 @@ function RecurringScheduler() {
     var mongoConnectString = process.env.MONGO_DB;//'mongodb://192.168.99.100:32769/hiredorfired';
     var mongoCollectionName = "users";
 
-    this.addRecurrentRegistrant = function(serviceName, url, frequency, callback){
+    this.addRegistrant = function(serviceName, url, frequency, callback){
         logger.log("Added registrant " + serviceName + " at " + url + " with frequency " + frequency);
         recurringRegistrants.push(
             {
@@ -19,6 +19,20 @@ function RecurringScheduler() {
         );
         callback("Successfully registered");
     };
+
+    this.removeRegistrant = function(serviceName, callback){
+        logger.log("Removing registrant " + serviceName);
+        for(var i = 0; i < recurringRegistrants.length; i++){
+            if (recurringRegistrants[i].name = serviceName){
+                var url = recurringRegistrants[i].url;
+                recurringRegistrants.splice(i, 1);
+                callback("Successfully removed registrant " + serviceName + " at url " + url);
+                return;
+            }
+        }
+        callback("No service found with name " + serviceName);
+    };
+
 
     function _onUserDataStoreUpdate(data){
         logger.scope();

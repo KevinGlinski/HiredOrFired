@@ -7,7 +7,7 @@ function AgeBasedScheduler() {
     var mongoConnectString = process.env.MONGO_DB;//'mongodb://192.168.99.100:32769/hiredorfired';
     var mongoCollectionName = "users";
 
-    this.addAgeBasedRegistrant = function(serviceName, url, age, callback){
+    this.addRegistrant = function(serviceName, url, age, callback){
         logger.log("Added registrant " + serviceName + " at " + url + " with trigger date " + age);
         ageBasedRegistrants.push(
             {
@@ -17,6 +17,19 @@ function AgeBasedScheduler() {
             }
         );
         callback("Successfully registered");
+    };
+
+    this.removeRegistrant = function(serviceName, callback){
+        logger.log("Removing registrant " + serviceName);
+        for(var i = 0; i < ageBasedRegistrants.length; i++){
+            if (ageBasedRegistrants[i].name = serviceName){
+                var url = ageBasedRegistrants[i].url;
+                ageBasedRegistrants.splice(i, 1);
+                callback("Successfully removed registrant " + serviceName + " at url " + url);
+                return;
+            }
+        }
+        callback("No service found with name " + serviceName);
     };
 
     function onUserDataStoreUpdate(data){
