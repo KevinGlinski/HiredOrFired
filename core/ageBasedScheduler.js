@@ -32,14 +32,14 @@ function AgeBasedScheduler() {
         callback("No service found with name " + serviceName);
     };
 
-    function onUserDataStoreUpdate(data){
+    function onUserDataStoreUpdate(){
         logger.scope();
         ageBasedRegistrants.forEach(function (element, index, arr) {
-            _notifyRegistrants(element, data);
+            _notifyRegistrants(element);
         });
     };
 
-    function _notifyRegistrants(element, data) {
+    function _notifyRegistrants(element) {
         logger.log("Checking registrant: " + element.name);
 
         var daysAgo = element.age;

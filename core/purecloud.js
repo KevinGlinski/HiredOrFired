@@ -37,7 +37,7 @@ function getPureCloudUsers(callback){
 
     function fetchUsers(uri)
     {
-        console.log(uri);
+        logger.log(uri);
         request({
             url: uri,
             method: 'GET',

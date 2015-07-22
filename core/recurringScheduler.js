@@ -34,11 +34,11 @@ function RecurringScheduler() {
     };
 
 
-    function _onUserDataStoreUpdate(data){
+    function _onUserDataStoreUpdate(){
         logger.scope();
         //Check recurring registrants for things to send
         var newRegistrants = _findNewRegistrants();
-        var dueRegistrants = _findDueRegistrants(data.date);
+        var dueRegistrants = _findDueRegistrants(new Date());
         var registrantsToProcess = newRegistrants.concat(dueRegistrants);
         _processUpdatesForRegistrants(registrantsToProcess)
     }
@@ -46,6 +46,7 @@ function RecurringScheduler() {
     function _processUpdatesForRegistrants(registrants){
         logger.scope();
         registrants.forEach(function processForRegistrant(element){
+            logger.log("Processing update for registrant by name "+ element.name );
             var data = _getDataFromDaysAgo(element.frequency);
 
             if (data.length > 0) {
@@ -82,13 +83,15 @@ function RecurringScheduler() {
         var dueRegistrants = [];
         recurringRegistrants.forEach(function(element, index, arr){
             var lastRanDate = element.lastExecution;
-            var daysSinceExecution = _getDaysBetween(lastRanDate, dataDate);
+            if(lastRanDate) {
+                var daysSinceExecution = _getDaysBetween(lastRanDate, dataDate);
 
-            logger.log("Days Since: " + daysSinceExecution + " Target Days: " + element.frequency);
-            if(daysSinceExecution == element.frequency){
-                //We need to process
-                logger.log("Adding " + element.name + " as registrant to process");
-                dueRegistrants.push(element);
+                logger.log("Days Since: " + daysSinceExecution + " Target Days: " + element.frequency);
+                if (daysSinceExecution == element.frequency) {
+                    //We need to process
+                    logger.log("Adding " + element.name + " as registrant to process");
+                    dueRegistrants.push(element);
+                }
             }
         });
         return dueRegistrants;
@@ -100,9 +103,11 @@ function RecurringScheduler() {
     }
 
     function _getDataFromDaysAgo(numDays) {
+        logger.scope();
         mongoClient.connect(mongoConnectString, function (err, db) {
             if (err) {
-                return logger.log(err);
+                logger.log(err);
+                return;
             }
             var collection = db.collection(mongoCollectionName);
 
