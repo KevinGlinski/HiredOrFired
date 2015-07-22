@@ -1,15 +1,22 @@
 FROM ubuntu:14.04
-MAINTAINER Kevin Glinski <kevin.glinski@inin.com>
-RUN apt-get update && apt-get install -y ruby ruby-dev
+MAINTAINER Hired Or Fired<hiredorfired@inin.com>
 
-RUN gem install bundler
+# Install Node.js and npm
+RUN apt-get update && apt-get install -y \
+	nodejs \
+	npm
 
-RUN mkdir /hired_or_fired
-WORKDIR /hired_or_fired
+# Copy the current directory to the container
+COPY . /hired_or_fired
 
-ADD web /hired_or_fired
+# Set our working directory from here on out
+WORKDIR /hired_or_fired/core
 
-RUN bundle install
+# Install app dependencies
+RUN npm install
 
-EXPOSE 5000
-CMD ["bundle", "exec", "rackup", "--host", "0.0.0.0", "-p", "5000"]
+# Expose port 8080
+EXPOSE  8080
+
+# Start node
+CMD ["nodejs", "server.js"]

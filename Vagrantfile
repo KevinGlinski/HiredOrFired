@@ -53,10 +53,10 @@ end
       args: "-t deathrowe/hiredorfired:v1"
     d.run "hiredorfired",
       image: "deathrowe/hiredorfired:v1",
-      args: "-d -p 5000:5000 --link mongodb:db"
+      args: "-d -p 8080:8080 --link mongodb:db"
   end
 
 # Open the following ports on the vm
   config.vm.network :forwarded_port, guest: 27017, host: 27017
-  config.vm.network :forwarded_port, guest: 5000, host: 5000
+  config.vm.network :forwarded_port, guest: 8080, host: 8080
 end
