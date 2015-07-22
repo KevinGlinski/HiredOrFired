@@ -1,0 +1,25 @@
+{
+  "name": "web",
+  "version": "0.0.0",
+  "description": "Web Frontend to Hired or Fired",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/KevinGlinski/HiredOrFired"
+  },
+  "author": "Kevin Glinski",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/KevinGlinski/HiredOrFired/issues"
+  },
+  "homepage": "https://github.com/KevinGlinski/HiredOrFired",
+  "dependencies": {
+    "express": "~4.11.2",
+    "request": "~2.53.0",
+    "mongodb": "~2.0.14"
+    }
+}
