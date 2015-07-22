@@ -4,6 +4,7 @@ var MongoClient = require('mongodb').MongoClient;
 // Connection URL
 var url = process.env.MONGO_DB;//'mongodb://192.168.99.100:32769/hiredorfired';
 var userCollection = null;
+var intervalCollection = null;
 var updateListeners = [];
 
 if (url) {
@@ -11,7 +12,8 @@ if (url) {
     MongoClient.connect(url, function (err, db) {
         logger.log("Connected correctly to MongoDB");
         userCollection = db.collection('users');
-        //db.close();
+        intervalCollection = db.collection('intervals');
+        db.close();
     });
 }
 
@@ -40,6 +42,9 @@ module.exports = {
     },
     onDataUpdated: function(callback){
         updateListeners.push(callback);
+    },
+    addInterval: function(interval){
+        intervalCollection.insertOne(interval);
     },
     updateCompleted: function(){
         updateListeners.forEach(function(element, index, arr){
