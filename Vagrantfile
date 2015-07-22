@@ -6,6 +6,18 @@
 # backwards compatibility). Please don't change it unless you know what
 # you're doing.
 
+# This will run a shell script that will stop and remove all containers
+# This should only be ran on a reload as it will fail on the initial start
+Vagrant.configure("2") do |config|
+  config.vm.provision :shell do |s|
+    s.inline = <<-SCRIPT
+    echo I am stopping and removing all containers..
+    docker stop $(docker ps -a -q)
+    docker rm $(docker ps -a -q)
+    SCRIPT
+  end
+end
+
 Vagrant.configure("2") do |config|
 
 # There is an issue with OsX 10.10 and VirtualBox. This is the workaround
