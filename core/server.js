@@ -16,7 +16,7 @@ app.use(bodyParser.urlencoded());
 app.use(scheduler);
 app.use(require('./routes/testRoutes'));
 
-app.set('port', (process.env.PORT || 8080));
+app.set('port', (process.env.PORT || 8088));
 
 var httpServer = http.createServer(app);
 

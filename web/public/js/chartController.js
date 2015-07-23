@@ -8,12 +8,30 @@ hiredOrFired.controller('ChartController', function($scope,$timeout, $rootScope,
     $scope.setInterval = function(interval){
         console.log(interval);
         $scope.interval = interval;
+        refresh();
     }
 
     $scope.doRefresh = function(){
         refresh();
     }
 
+    function getIntervalEnd(startDate){
+        var endDate = startDate;
+
+        switch ($scope.interval) {
+            case 'weekly':
+            endDate.setDate(endDate.getDate()+7)
+            break;
+            case 'monthly':
+            endDate.setMonth(endDate.getMonth() +1);
+            break;
+            default:
+            endDate.setDate(endDate.getDate()+1)
+
+        }
+
+        return endDate;
+    }
     function refresh(){
         userService.getUsersPerInterval($scope.startDate, $scope.endDate, $scope.interval, function(data){
 
@@ -22,24 +40,35 @@ hiredOrFired.controller('ChartController', function($scope,$timeout, $rootScope,
 
             var sum =0;
 
+            var intervalSum = 0;
+            var intervalStart = new Date($scope.startDate);
+            var intervalEnd = getIntervalEnd(intervalStart);
+
             for(var x= 0; x< data.length; x++){
-                if(x != data.length -1){
-            //
+                var dayIntervalDay = new Date(data[x].day);
+                if(dayIntervalDay >= intervalEnd ){
 
-                    var date = new Date(data[x].day);
-                    var nextdate =  new Date(data[x+1].day);
+                    //days.push(new Date(data[x].day).toDateString());
+                    //values.push(sum + data[x].count);
+                    while(dayIntervalDay >= intervalEnd){
 
-                    if(date.getTime() == nextdate.getTime()){
-                        days.push(new Date(data[x].day).toDateString());
-                        values.push(sum + data[x+1].count + data[x].count);
-                        x++;
-                    }else{
-                        days.push(new Date(data[x].day).toDateString());
-                        values.push(sum + data[x].count);
+                        values.push(intervalSum);
+                        days.push(intervalStart.toDateString());
+                        intervalStart = intervalEnd;
+                        intervalEnd = getIntervalEnd(intervalStart);
+                        intervalSum = sum;
                     }
 
-                            sum += data[x].count;
+                }else if(x == data.length -1){
+                    intervalSum += data[x].count
+                    values.push(intervalSum);
+                    days.push(intervalStart.toDateString());
                 }
+
+
+                intervalSum += data[x].count
+
+                sum += data[x].count;
 
             }
 
@@ -53,5 +82,5 @@ hiredOrFired.controller('ChartController', function($scope,$timeout, $rootScope,
     $scope.$watch('interval', function(newValue, oldValue){
         refresh();
     });
-    
+
 });

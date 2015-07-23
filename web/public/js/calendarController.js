@@ -3,29 +3,15 @@ hiredOrFired.controller('CalendarController', function($scope, $rootScope, $comp
 
     var addedColor = "#2E8B57";
     var removedColor = "red";
+    /*
     var date = new Date();
     var d = 1;
     var m = 7;
     var y = date.getFullYear();
-
+*/
     $scope.events = [
 
     ];
-/*
-    function getData(){
-        userService.getUsersForMonth(2015,5, function(users){
-            console.log(users)
-            for(var x = 0; x< users.length; x++){
-                console.log("adding " + users[x].name + " " + users[x].added )
-
-                $scope.events.push({
-                    title: users[x].name,start: users[x].added, color: users[x].removed ? removedColor : addedColor
-                })
-            }
-            console.log($scope.events)
-        })
-
-    }*/
 
     $scope.lastData = [];
     $scope.eventsF = function (start, end, timezone, callback) {
@@ -34,10 +20,10 @@ hiredOrFired.controller('CalendarController', function($scope, $rootScope, $comp
         var e = new Date(end).getTime() / 1000;
         var m = new Date(start).getMonth();
 
-        userService.getUsersForMonth(new Date(start).getFullYear(),new Date(start).getMonth(), function(users){
+        userService.getUsersForMonth(new Date(start).getFullYear(),new Date(start).getMonth() , function(users){
             console.log(users)
             for(var x = 0; x< users.length; x++){
-                console.log("adding " + users[x].name + " " + users[x].added )
+                //console.log("adding " + users[x].name + " " + users[x].added )
 
                 events.push({
                     title: users[x].name,
@@ -50,6 +36,7 @@ hiredOrFired.controller('CalendarController', function($scope, $rootScope, $comp
 
             }
             $scope.lastData = events;
+
             callback(events);
         })
 
