@@ -53,7 +53,7 @@ end
       args: "-t deathrowe/hiredorfired_core"
     d.run "hiredorfired_core",
       image: "deathrowe/hiredorfired_core",
-      args: "-d -p 8088:8088 --link mongodb:db "
+      args: "-d -p 8088:8088 --link mongodb:db --env-file /hiredorfired/core/env.txt"
   end
 
 # Build our image then run the container
