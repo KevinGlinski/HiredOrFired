@@ -82,7 +82,7 @@ function AgeBasedScheduler() {
             startDate = parseFloat(startDate - (daysAgo * oneDayMilliSeconds)); //convert days to seconds.
             logger.log("Getting intervals since " + startDate);
 
-            collection.find({"date": {$gt: startDate, $lt: startDate + oneDayMilliSeconds}}).toArray(function(err, results){
+            collection.find({"date": {$gte: startDate, $lt: startDate + oneDayMilliSeconds}}).toArray(function(err, results){
                 if (err){
                     logger.log("Error : " + err);
                 }
