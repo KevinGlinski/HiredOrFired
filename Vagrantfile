@@ -53,7 +53,7 @@ end
       args: "-t deathrowe/hiredorfired_core"
     d.run "hiredorfired_core",
       image: "deathrowe/hiredorfired_core",
-      args: "-d -p 8088:8088 --link mongodb:db --env-file /hiredorfired/core/env.txt"
+      args: "-d -p 8088:8088 --link mongodb:db --env-file /hiredorfired/core/env.txt -v /hiredorfired/core:/hired_or_fired/core"
   end
 
 # Build our image then run the container
@@ -62,7 +62,7 @@ end
       args: "-t deathrowe/hiredorfired_web"
     d.run "hiredorfired_web",
       image: "deathrowe/hiredorfired_web",
-      args: "-d -p 8080:8080 --link mongodb:db --link hiredorfired_core:core"
+      args: "-d -p 8080:8080 --link mongodb:db --link hiredorfired_core:c -v /hiredorfired/web:/hired_or_fired/web"
   end
 
 # Build our image then run the container
