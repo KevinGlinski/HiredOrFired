@@ -56,13 +56,22 @@ end
       args: "-d -p 8088:8088 --link mongodb:db "
   end
 
-  # Build our image then run the container
+# Build our image then run the container
   config.vm.provision :docker do |d|
     d.build_image "/hiredorfired/web",
       args: "-t deathrowe/hiredorfired_web"
     d.run "hiredorfired_web",
       image: "deathrowe/hiredorfired_web",
       args: "-d -p 8080:8080 --link mongodb:db --link hiredorfired_core:core"
+  end
+
+# Build our image then run the container
+  config.vm.provision :docker do |d|
+    d.build_image "/hiredorfired/services/ipa",
+      args: "-t deathrowe/hiredorfired_ipa"
+    d.run "hiredorfired_ipa",
+      image: "deathrowe/hiredorfired_ipa",
+      args: "-d -p 5000:5000 --link hiredorfired_core:core"
   end
 
 # Open the following ports on the vm
