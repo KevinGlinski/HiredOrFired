@@ -7,15 +7,15 @@ RUN apt-get update && apt-get install -y \
 	npm
 
 # Copy the current directory to the container
-COPY . /hired_or_fired
+COPY . /hired_or_fired/web
 
 # Set our working directory from here on out
-WORKDIR /hired_or_fired/core
+WORKDIR /hired_or_fired/web
 
 # Install app dependencies
 RUN npm install
 
-# Expose port 8080
+# Expose ports 8080
 EXPOSE  8080
 
 # Start node

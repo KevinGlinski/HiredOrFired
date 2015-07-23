@@ -1,6 +1,6 @@
 var mongoClient = require('mongodb').MongoClient;
 var userStore = require('./userDataStore');
-var logger = require('../utils/traceLogger');
+var logger = require('./utils/traceLogger');
 var request = require('request');
 
 function RecurringScheduler() {
