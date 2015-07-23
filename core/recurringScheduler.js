@@ -105,7 +105,7 @@ function RecurringScheduler() {
 
     function _getDaysBetween(firstDate, secondDate){
         var oneDay = 24*60*60*1000; // hours*minutes*seconds*milliseconds
-        return Math.ceil(Math.abs((firstDate - secondDate)/(oneDay)));
+        return Math.floor(Math.abs((firstDate - secondDate)/(oneDay)));
     }
 
     function _getDataFromDaysAgo(numDays, callback) {
@@ -118,6 +118,7 @@ function RecurringScheduler() {
             var collection = db.collection(mongoCollectionName);
 
             var startDate = Date.now();//milliseconds since epoch
+            startDate = startDate - (startDate % oneDayMilliSeconds); //This is the most recent midnight.
             startDate = parseFloat(startDate - (numDays * 86400000)); //convert days to milliseconds.
             logger.log("Getting intervals since " + startDate);
             var results = [];

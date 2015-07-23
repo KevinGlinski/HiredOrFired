@@ -78,7 +78,7 @@ function AgeBasedScheduler() {
             var collection = db.collection(mongoCollectionName);
             var oneDayMilliSeconds = 86400000;
             var startDate = Date.now();//milliseconds since epoch
-            startDate = startDate - (startDate % oneDayMilliSeconds); //This is the previous midnight.
+            startDate = startDate - (startDate % oneDayMilliSeconds); //This is the most recent midnight.
             startDate = parseFloat(startDate - (daysAgo * oneDayMilliSeconds)); //convert days to seconds.
             logger.log("Getting intervals since " + startDate);
 
