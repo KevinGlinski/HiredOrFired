@@ -116,7 +116,7 @@ function RecurringScheduler() {
                 callback([], err);
             }
             var collection = db.collection(mongoCollectionName);
-
+            var oneDayMilliSeconds = 86400000;
             var startDate = Date.now();//milliseconds since epoch
             startDate = startDate - (startDate % oneDayMilliSeconds); //This is the most recent midnight.
             startDate = parseFloat(startDate - (numDays * 86400000)); //convert days to milliseconds.
