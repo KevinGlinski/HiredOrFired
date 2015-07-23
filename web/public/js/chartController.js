@@ -1,4 +1,4 @@
-hiredOrFired.controller('ChartController', function($scope,$timeout, $rootScope, userService){
+hiredOrFired.controller('chartController', function($scope,$timeout, $rootScope, userService){
     var today = new Date();
     $scope.endDate = new Date();
     $scope.startDate = new Date(today.getFullYear(), today.getMonth(), 1);

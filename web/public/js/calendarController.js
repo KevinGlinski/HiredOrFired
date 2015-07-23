@@ -1,5 +1,5 @@
 hiredOrFired.constant('uiCalendarConfig', {calendars: {}})
-hiredOrFired.controller('CalendarController', function($scope, $rootScope, $compile, $timeout, uiCalendarConfig, userService){
+hiredOrFired.controller('calendarController', function($scope, $rootScope, $compile, $timeout, uiCalendarConfig, userService){
 
     var addedColor = "#2E8B57";
     var removedColor = "red";
