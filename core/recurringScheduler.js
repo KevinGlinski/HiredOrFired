@@ -1,6 +1,6 @@
 var mongoClient = require('mongodb').MongoClient;
 var userStore = require('./userDataStore');
-var logger = require('../utils/traceLogger');
+var logger = require('./utils/traceLogger');
 var request = require('request');
 
 function RecurringScheduler() {
@@ -116,14 +116,14 @@ function RecurringScheduler() {
                 callback([], err);
             }
             var collection = db.collection(mongoCollectionName);
-
+            var oneDayMilliSeconds = 86400000;
             var startDate = Date.now();//milliseconds since epoch
             startDate = startDate - (startDate % oneDayMilliSeconds); //This is the most recent midnight.
             startDate = parseFloat(startDate - (numDays * 86400000)); //convert days to milliseconds.
             logger.log("Getting intervals since " + startDate);
             var results = [];
 
-            collection.find({"date": { $gte: startDate }}).toArray(function (err, results) {
+            collection.find({"date": {$gte: startDate, $lt: Date.now()}}).toArray(function (err, results) {
                 if (err) {
                     logger.log("Error : " + err);
                 }

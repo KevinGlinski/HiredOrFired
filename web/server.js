@@ -7,6 +7,9 @@ var app = express();
 
 var MongoClient = require('mongodb').MongoClient;
 
+if (process.env.MONGO_DB == null){
+    process.env['MONGO_DB'] = "mongodb://" + process.env.DB_PORT_27017_TCP_ADDR + "/hiredorfired"
+}
 
 app.use(express.static(__dirname +'/public'));
 

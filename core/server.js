@@ -8,6 +8,10 @@ userDataStore = require('./userDataStore.js');
 
 var scheduler = require('./routes/scheduler');
 
+if (process.env.MONGO_DB == null){
+    process.env['MONGO_DB'] = "mongodb://" + process.env.DB_PORT_27017_TCP_ADDR + "/hiredorfired"
+}
+
 var app = express();
 
 app.use(express.static(__dirname));

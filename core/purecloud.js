@@ -1,6 +1,6 @@
 var request = require('request');
 var userDiff = require('./userDiff.js');
-var logger = require('../utils/traceLogger');
+var logger = require('./utils/traceLogger');
 
 var base_uri = "https://public--api-us--east--1-inindca-com-7a1o6tnlzr5h.runscope.net" ;
 //var base_uri =  "https://public-api.us-east-1.ininsca.com";

@@ -1,4 +1,4 @@
-var logger = require('../utils/traceLogger');
+var logger = require('./utils/traceLogger');
 var MongoClient = require('mongodb').MongoClient;
 
 // Connection URL

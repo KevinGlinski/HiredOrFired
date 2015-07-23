@@ -1,7 +1,7 @@
 var app = module.exports = require('express')();
 var ageScheduler = require('../ageBasedScheduler');
 var recurringScheduler = require('../recurringScheduler');
-var logger = require('../../utils/traceLogger');
+var logger = require('../utils/traceLogger');
 
 app.post('/schedule/age/:age', function(req, res){
     logger.log(JSON.stringify(req.body));

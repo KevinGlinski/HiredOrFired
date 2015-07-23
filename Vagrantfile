@@ -49,14 +49,24 @@ end
 
 # Build our image then run the container
   config.vm.provision :docker do |d|
-    d.build_image "/hiredorfired",
-      args: "-t deathrowe/hiredorfired:v1"
-    d.run "hiredorfired",
-      image: "deathrowe/hiredorfired:v1",
-      args: "-d -p 8080:8080 --link mongodb:db"
+    d.build_image "/hiredorfired/core",
+      args: "-t deathrowe/hiredorfired_core"
+    d.run "hiredorfired_core",
+      image: "deathrowe/hiredorfired_core",
+      args: "-d -p 8088:8088 --link mongodb:db "
+  end
+
+  # Build our image then run the container
+  config.vm.provision :docker do |d|
+    d.build_image "/hiredorfired/web",
+      args: "-t deathrowe/hiredorfired_web"
+    d.run "hiredorfired_web",
+      image: "deathrowe/hiredorfired_web",
+      args: "-d -p 8080:8080 --link mongodb:db --link hiredorfired_core:core"
   end
 
 # Open the following ports on the vm
   config.vm.network :forwarded_port, guest: 27017, host: 27017
   config.vm.network :forwarded_port, guest: 8080, host: 8080
+  config.vm.network :forwarded_port, guest: 8088, host: 8088
 end
