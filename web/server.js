@@ -63,13 +63,14 @@ app.get('/usersperinterval', function (req,res){
 
     console.log(query);
 
-    //var startDate = new Date(query.start);
-    //var endDate = new Date(query.end);
+    var startTime = new Date(query.start);
+    var endTime = new Date(query.end);
 
-    var startTime = new Date(2014,5,1);
-    var endTime = new Date(2016,6,1);
+    //var startTime = new Date(2014,5,1);
+    //var endTime = new Date(2016,6,1);
 
     var dbUrl = process.env.MONGO_DB;
+
 
     MongoClient.connect(dbUrl, function (err, db) {
         var userCollection = db.collection('users');
@@ -112,66 +113,79 @@ app.get('/usersperinterval', function (req,res){
                     [
                         { $match : {
                             $and:
-                                [
-                                    {"removed" : { $gte : startTime.getTime(), $lt: endTime.getTime() }}
-                                ]
-                            }
-                        },
-                        {
-                            $group: {
-                                _id: {
-                                    addedday: {
-                                        month: { $month: {
-                                            $add : [ new Date(0), "$removed"]
-                                        } },
-                                        day: { $dayOfMonth: {
-                                            $add : [ new Date(0), "$removed"]
-                                        } },
-                                        year: { $year: {
-                                            $add : [ new Date(0), "$removed"]
-                                        }}
-                                    }
-                                } ,
-                                "count": { "$sum": 1 },
+                            [
+                                {"removed" : { $gte : startTime.getTime(), $lt: endTime.getTime() }}
+                            ]
+                        }
+                    },
+                    {
+                        $group: {
+                            _id: {
+                                addedday: {
+                                    month: { $month: {
+                                        $add : [ new Date(0), "$removed"]
+                                    } },
+                                    day: { $dayOfMonth: {
+                                        $add : [ new Date(0), "$removed"]
+                                    } },
+                                    year: { $year: {
+                                        $add : [ new Date(0), "$removed"]
+                                    }}
+                                }
+                            } ,
+                            "count": { "$sum": 1 },
 
 
-                            }
-                        },
-                        {$sort:{"count":1}}
+                        }
+                    },
+                    {$sort:{"count":1}}
 
-                    ]
-                )
+                ]
+            )
 
 
-                removedcursor.each(function(err, docs) {
-                    if(docs == null) {
+            removedcursor.each(function(err, docs) {
+                if(docs == null) {
 
+
+                    userCollection.count( { $and : [{"added":{$lt : startTime.getTime() }}, {"removed": {$eq: null}}  ]}, function(err, count) {
+                        results.push({
+                            day: startTime,
+                            count: count
+                        })
                         db.close();
 
-                        results.sort(function(a,b){
-                            return a.day > b.day;
+                        results = results.sort(function(a,b){
+
+                            //return a.day.getTime() > b.day.getTime();
+                            a = new Date(a.day);
+                            b = new Date(b.day);
+                            return a<b ? -1 : a>b ? 1 : 0;
                         });
 
                         console.log(results);
                         res.send(results);
 
-                    }else{
+                    })
+
+
+                }else{
                     //    console.log("each")
-                        //console.log(docs)
+                    //console.log(docs)
 
-                        results.push({day: new Date(docs["_id"].addedday.year, docs["_id"].addedday.month-1, docs["_id"].addedday.day), count: docs.count * -1});
-                    }
-                });
+                    results.push({day: new Date(docs["_id"].addedday.year, docs["_id"].addedday.month-1, docs["_id"].addedday.day), count: docs.count * -1});
+                }
+            });
 
 
-            }else{
-                //console.log("each")
+        }else{
+            //console.log("each")
             //    console.log(docs)
 
-                results.push({day: new Date(docs["_id"].addedday.year, docs["_id"].addedday.month-1, docs["_id"].addedday.day), count: docs.count});
-            }
-        });
+            results.push({day: new Date(docs["_id"].addedday.year, docs["_id"].addedday.month-1, docs["_id"].addedday.day), count: docs.count});
+        }
     });
+});
 
 });
 

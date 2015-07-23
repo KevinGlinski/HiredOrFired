@@ -18,6 +18,7 @@
     <script src="js/app.js"></script>
     <script src="js/CalendarController.js"></script>
     <script src="js/ChartController.js"></script>
+    <script src="js/mainController.js"></script>
     <script src="js/userService.js"></script>
 
     <link rel="stylesheet" href="bower_components/fullcalendar/dist/fullcalendar.css"/>
@@ -26,7 +27,20 @@
 
 </head>
 <body>
-<ng-include src="'views/chart.html'"></ng-include>
+    <div  ng-controller="MainController">
+    <nav class="navbar navbar-default">
+        <div class="container-fluid">
+            <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+                <ul class="nav navbar-nav">
+                    <li ng-class="{active : view == 'calendar' }"><a  ng-click="setView('calendar')" href="#">Calendar View </a></li>
+                    <li ng-class="{active : view == 'graph' }" ng-click="setView('graph')"><a href="#">Graph View</a></li>
 
+                </ul>
+            </div><!-- /.navbar-collapse -->
+        </div><!-- /.container-fluid -->
+    </nav>
+    <ng-include src="'views/chart.html'" ng-if="view == 'graph'"></ng-include>
+    <ng-include src="'views/calendar.html'" ng-if="view == 'calendar'"></ng-include>
+</div>
 </body>
 </html>
