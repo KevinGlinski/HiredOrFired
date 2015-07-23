@@ -10,53 +10,6 @@ var MongoClient = require('mongodb').MongoClient;
 
 app.use(express.static(__dirname +'/public'));
 
-function getUsersForInterval(users, start, end, interval, callback){
-
-    db.collection.aggregate(
-        {$project: {
-            ageLowerBound: {$subtract:["$age", {$mod:["$age",2]}]}}
-        },
-        {$group: {
-            _id:"$ageLowerBound",
-            count:{$sum:1}
-        }
-    })
-    /*
-    var scalar = 0;
-    var MILLISECONDS_IN_A_DAY = 86400000;
-    switch (interval) {
-    case 'daily':
-    scalar = MILLISECONDS_IN_A_DAY;
-    break;
-    case 'weekly':
-    scalar = MILLISECONDS_IN_A_DAY * 7
-    break;
-    case 'monthly':
-    break;
-    default:
-
-    }
-
-    var endOfInterval = start.getTime() + scalar;
-    if(endInterval > end){
-    endInterval = end;
-    }
-
-    userCollection.count( {added: { $gt: start.getTime(), $lt: end.getTime()}} , function(err, count) {
-    console.log(count + " users")
-    //console.log("starting with " + users.length);
-    dayPoints.push(startDate);
-    valuePoints.push(count);
-
-    getUsersForInterval(startDate, )
-    res.send({
-    days: dayPoints,
-    values: valuePoints
-    });
-    });
-    */
-}
-
 app.get('/usersperinterval', function (req,res){
     var url_parts = url.parse(req.url, true);
     var query = url_parts.query;
@@ -71,131 +24,74 @@ app.get('/usersperinterval', function (req,res){
 
     var dbUrl = process.env.MONGO_DB;
 
+    var results = [];
 
     MongoClient.connect(dbUrl, function (err, db) {
+        var intervalCollection = db.collection('intervals');
         var userCollection = db.collection('users');
 
         var results=[];
-        var cursor = userCollection.aggregate(
-            [
-                { $match : { "added" : { $gte : startTime.getTime(), $lt: endTime.getTime() } } },
-                {
-                    $group: {
-                        _id: {
-                            addedday: {
-                                month: { $month: {
-                                    $add : [ new Date(0), "$added"]
-                                } },
-                                day: { $dayOfMonth: {
-                                    $add : [ new Date(0), "$added"]
-                                } },
-                                year: { $year: {
-                                    $add : [ new Date(0), "$added"]
-                                }}
-                            }
-                        } ,
-                        "count": { "$sum": 1 },
 
+        var intervalFilter = { "date" : { $gte : startTime.getTime(), $lt: endTime.getTime() } };
+        console.log(intervalFilter);
+        var cursor = intervalCollection.find(intervalFilter).toArray(function(err, intervals) {
+            userCollection.count( { $and : [{"added":{$lt : startTime.getTime() }}, {"removed": {$eq: null}}  ]}, function(err, startcount) {
 
+                for(var x=0;x<intervals.length; x++){
+                    var interval = intervals[x];
+
+                    console.log(interval)
+                    var delta = interval.hired.length - interval.fired.length
+                    console.log(delta);
+
+                    if(x==0){
+                        delta += startcount;
                     }
-                },
-                {$sort:{"count":1}}
 
-            ]
-        )
+                    results.push({
+                        day: new Date(interval.date),
+                        count: delta
+                    });
 
-
-        cursor.each(function(err, docs) {
-            if(docs == null) {
-                var removedResults =[];
-
-                var removedcursor = userCollection.aggregate(
-                    [
-                        { $match : {
-                            $and:
-                            [
-                                {"removed" : { $gte : startTime.getTime(), $lt: endTime.getTime() }}
-                            ]
-                        }
-                    },
-                    {
-                        $group: {
-                            _id: {
-                                addedday: {
-                                    month: { $month: {
-                                        $add : [ new Date(0), "$removed"]
-                                    } },
-                                    day: { $dayOfMonth: {
-                                        $add : [ new Date(0), "$removed"]
-                                    } },
-                                    year: { $year: {
-                                        $add : [ new Date(0), "$removed"]
-                                    }}
-                                }
-                            } ,
-                            "count": { "$sum": 1 },
-
-
-                        }
-                    },
-                    {$sort:{"count":1}}
-
-                ]
-            )
-
-
-            removedcursor.each(function(err, docs) {
-                if(docs == null) {
-
-
-                    userCollection.count( { $and : [{"added":{$lt : startTime.getTime() }}, {"removed": {$eq: null}}  ]}, function(err, count) {
-                        results.push({
-                            day: startTime,
-                            count: count
-                        })
-                        db.close();
-
-                        results = results.sort(function(a,b){
-
-                            //return a.day.getTime() > b.day.getTime();
-                            a = new Date(a.day);
-                            b = new Date(b.day);
-                            return a<b ? -1 : a>b ? 1 : 0;
-                        });
-
-                        console.log(results);
-                        res.send(results);
-
-                    })
-
-
-                }else{
-                    //    console.log("each")
-                    //console.log(docs)
-
-                    results.push({day: new Date(docs["_id"].addedday.year, docs["_id"].addedday.month-1, docs["_id"].addedday.day), count: docs.count * -1});
                 }
+
+                results = results.sort(function(a,b){
+
+                    //return a.day.getTime() > b.day.getTime();
+                    a = new Date(a.day);
+                    b = new Date(b.day);
+                    return a<b ? -1 : a>b ? 1 : 0;
+                });
+                res.send(results);
+                db.close();
             });
+        });
 
 
-        }else{
-            //console.log("each")
-            //    console.log(docs)
-
-            results.push({day: new Date(docs["_id"].addedday.year, docs["_id"].addedday.month-1, docs["_id"].addedday.day), count: docs.count});
-        }
     });
 });
 
-});
 
 app.get('/users', function (req, res) {
     var url_parts = url.parse(req.url, true);
     var query = url_parts.query;
+    console.log(query);
+    var year = parseInt(query.year);
+    var month = parseInt(query.month);
+    var nextMonth = month +1;
 
-    var startDate = new Date(query.year.valueOf(), query.month.valueOf(), 1);
-    var endDate = new Date(query.year.valueOf(), query.month.valueOf() +1 , 1);
-    console.log(startDate + " to " +endDate )
+    var startDate = new Date(year, month +1, 1,0,0,0);
+    var endDate = new Date(year, nextMonth +1 , 1,0,0,0);
+    //console.log(startDate.getYear());
+//    startDate = new Date(startDate.getYear(), startDate.getMonth(), 1);
+    //var endDate = new Date(year, nextMonth , 1,0,0,0);
+    //startDate = new Date(0).setTime(startDate);
+//    var endDate = startDate;// month.setMonth(month.getMonth() + 1);
+//    endDate.setMonth(endDate.getMonth() + 1);
+    console.log(year)
+    console.log(month)
+    console.log(nextMonth)
+    console.log(JSON.stringify(startDate) + " to " + JSON.stringify(endDate ))
     var dbUrl = process.env.MONGO_DB;
 
     MongoClient.connect(dbUrl, function (err, db) {
@@ -203,8 +99,8 @@ app.get('/users', function (req, res) {
 
         userCollection.find( {
             $or:[
-                { added: { $gt: startDate.getTime(), $lt: endDate.getTime() } },
-                { removed: { $gt: startDate.getTime(), $lt: endDate.getTime() } }
+                { added: { $gte: startDate.getTime(), $lt: endDate.getTime() } },
+                { removed: { $gte: startDate.getTime(), $lt: endDate.getTime() } }
             ]
         }).toArray(function(err, users) {
             //userCollection.find({ added: { $gt: startDate.getTime()} }).toArray(function(err, users) {

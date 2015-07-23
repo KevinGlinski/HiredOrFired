@@ -28,6 +28,10 @@ var hiredList = [];
 var firedList = [];
 var index = 0
 var date = 1420070400000;// Jan 1, 2015
+
+//date = 1435795200000 // jul 2
+
+
 for(var x=1; x<initialCount; x++){
     //add start users
     var user = addUser(array[x], date);
@@ -59,8 +63,11 @@ while(date < 1441065600000 && index< 9998){
     for(var x=0; x<random(0,2);x++){
         var removeIndex = random(initialCount + 1,users.length-1);
         //console.log('removing user at ' + removeIndex)
-        users[removeIndex].removed = date;
-        firedList.push(users[removeIndex]);
+        if(users[removeIndex].removed == null && users[removeIndex].added != date){
+            users[removeIndex].removed = date;
+            firedList.push(users[removeIndex]);
+        }
+
     }
 
     intervals.push({
