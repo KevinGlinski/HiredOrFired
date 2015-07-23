@@ -35,3 +35,4 @@ node_modules/
 .vagrant/*
 
 dump.rb
+env.txt
