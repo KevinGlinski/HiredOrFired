@@ -62,7 +62,7 @@ end
       args: "-t deathrowe/hiredorfired_web"
     d.run "hiredorfired_web",
       image: "deathrowe/hiredorfired_web",
-      args: "-d -p 8080:8080 --link mongodb:db --link hiredorfired_core:c -v /hiredorfired/web:/hired_or_fired/web"
+      args: "-d -p 8080:8080 --link mongodb:db --link hiredorfired_core:core"
   end
 
 # Build our image then run the container
