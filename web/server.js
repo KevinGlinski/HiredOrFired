@@ -33,9 +33,9 @@ app.get('/usersperinterval', function (req,res){
         var results=[];
 
         var intervalFilter = { "date" : { $gte : startTime.getTime(), $lt: endTime.getTime() } };
-        console.log(intervalFilter);
+
         var cursor = intervalCollection.find(intervalFilter).toArray(function(err, intervals) {
-            userCollection.count( { $and : [{"added":{$lt : startTime.getTime() }}, {"removed": {$eq: null}}  ]}, function(err, startcount) {
+            userCollection.count( { $and : [{"added":{$lt : startTime.getTime() }}, {"removed": {$gt: startTime.getTime()}}  ]}, function(err, startcount) {
 
                 for(var x=0;x<intervals.length; x++){
                     var interval = intervals[x];
@@ -45,6 +45,7 @@ app.get('/usersperinterval', function (req,res){
                     console.log(delta);
 
                     if(x==0){
+                        console.log('adding start count ' + startcount);
                         delta += startcount;
                     }
 

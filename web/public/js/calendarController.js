@@ -22,17 +22,33 @@ hiredOrFired.controller('CalendarController', function($scope, $rootScope, $comp
 
         userService.getUsersForMonth(new Date(start).getFullYear(),new Date(start).getMonth() , function(users){
             console.log(users)
+
+            var dateCount = {};
+
             for(var x = 0; x< users.length; x++){
                 //console.log("adding " + users[x].name + " " + users[x].added )
+
+                var color = addedColor;
 
                 events.push({
                     title: users[x].name,
                     start: users[x].added,
-                    color: users[x].removed ? removedColor : addedColor,
+                    color:  addedColor,
                     department: users[x].department,
                     role: users[x].title,
                 })
 
+                //HACK for demo, REMOVE SECOND PART OF IF CLAUSE
+                if(users[x].removed && new Date(users[x].removed).getDate() != 23){
+                    events.push({
+                        title: users[x].name,
+                        start: users[x].removed,
+                        color: removedColor,
+                        department: users[x].department,
+                        role: users[x].title,
+                    })
+
+                }
 
             }
             $scope.lastData = events;
