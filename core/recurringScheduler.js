@@ -123,7 +123,7 @@ function RecurringScheduler() {
             logger.log("Getting intervals since " + startDate);
             var results = [];
 
-            collection.find({"date": { $gte: startDate }}).toArray(function (err, results) {
+            collection.find({"date": {$gte: startDate, $lt: Date.now()}}).toArray(function (err, results) {
                 if (err) {
                     logger.log("Error : " + err);
                 }
