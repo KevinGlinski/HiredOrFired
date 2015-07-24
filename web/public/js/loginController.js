@@ -1,4 +1,4 @@
-hiredOrFired.controller( 'LoginController', function( $scope,$location, $http , $rootScope) {
+hiredOrFired.controller('loginController', function( $scope,$location, $http , $rootScope) {
 
     $scope.login=function() {
      	var client_id= environmentService.getClientIdForEnvironment(); //"bfadf7a0-3364-4f65-9fda-00d37877113f";

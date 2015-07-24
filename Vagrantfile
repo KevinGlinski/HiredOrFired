@@ -12,8 +12,8 @@ Vagrant.configure("2") do |config|
   config.vm.provision :shell do |s|
     s.inline = <<-SCRIPT
     echo I am stopping and removing all containers..
-    docker stop $(docker ps -a -q)
-    docker rm $(docker ps -a -q)
+    docker restart hiredorfired_core
+    docker restart hiredorfired_web
     SCRIPT
   end
 end
@@ -53,16 +53,25 @@ end
       args: "-t deathrowe/hiredorfired_core"
     d.run "hiredorfired_core",
       image: "deathrowe/hiredorfired_core",
-      args: "-d -p 8088:8088 --link mongodb:db "
+      args: "-d -p 8088:8088 --link mongodb:db --env-file /hiredorfired/core/env.txt -v /hiredorfired/core:/hired_or_fired/core"
   end
 
-  # Build our image then run the container
+# Build our image then run the container
   config.vm.provision :docker do |d|
     d.build_image "/hiredorfired/web",
       args: "-t deathrowe/hiredorfired_web"
     d.run "hiredorfired_web",
       image: "deathrowe/hiredorfired_web",
       args: "-d -p 8080:8080 --link mongodb:db --link hiredorfired_core:core"
+  end
+
+# Build our image then run the container
+  config.vm.provision :docker do |d|
+    d.build_image "/hiredorfired/services/ipa",
+      args: "-t deathrowe/hiredorfired_ipa"
+    d.run "hiredorfired_ipa",
+      image: "deathrowe/hiredorfired_ipa",
+      args: "-d -p 5000:5000 --link hiredorfired_core:core"
   end
 
 # Open the following ports on the vm

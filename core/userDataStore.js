@@ -2,19 +2,22 @@ var logger = require('./utils/traceLogger');
 var MongoClient = require('mongodb').MongoClient;
 
 // Connection URL
-var url = process.env.MONGO_DB;//'mongodb://192.168.99.100:32769/hiredorfired';
+var url = process.env.MONGO_DB || "mongodb://" + process.env.DB_PORT_27017_TCP_ADDR + "/hiredorfired";//'mongodb://192.168.99.100:32769/hiredorfired';
 var userCollection = null;
 var intervalCollection = null;
 var updateListeners = [];
 
+logger.log("DB URl " + url);
 if (url) {
     logger.log("Attempting mongo connection");
-    MongoClient.connect(url, function (err, db) {
+    MongoClient.connect(url , function (err, db) {
         logger.log("Connected correctly to MongoDB");
         userCollection = db.collection('users');
         intervalCollection = db.collection('intervals');
         //db.close();
     });
+}else{
+    logger.log("mongodb url is not set")
 }
 
 function findUser (email, callback){

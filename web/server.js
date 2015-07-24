@@ -8,6 +8,11 @@ var app = express();
 var MongoClient = require('mongodb').MongoClient;
 
 
+if (process.env.MONGO_DB == null){
+    process.env['MONGO_DB'] = "mongodb://" + process.env.DB_PORT_27017_TCP_ADDR + "/hiredorfired"
+}
+
+
 app.use(express.static(__dirname +'/public'));
 
 app.get('/usersperinterval', function (req,res){
@@ -33,35 +38,56 @@ app.get('/usersperinterval', function (req,res){
         var results=[];
 
         var intervalFilter = { "date" : { $gte : startTime.getTime(), $lt: endTime.getTime() } };
-        console.log(intervalFilter);
+        var countFilter = {
+            $and : [
+                {"added":{$lt : startTime.getTime() }},
+                {$or :[
+                    {"removed": {$gt: startTime.getTime()}}  ,
+                    {"removed": {$eq: null} }
+                ]}
+
+            ]
+        };
+
+        console.log("Count Filter")
+        console.log(JSON.stringify(countFilter))
+
         var cursor = intervalCollection.find(intervalFilter).toArray(function(err, intervals) {
-            userCollection.count( { $and : [{"added":{$lt : startTime.getTime() }}, {"removed": {$eq: null}}  ]}, function(err, startcount) {
+            userCollection.count(countFilter, function(err, startcount) {
+
+                intervals = intervals.sort(function(a,b){
+
+                    //return a.day.getTime() > b.day.getTime();
+                    a = new Date(a.date);
+                    b = new Date(b.date);
+                    return a<b ? -1 : a>b ? 1 : 0;
+                });
 
                 for(var x=0;x<intervals.length; x++){
                     var interval = intervals[x];
 
-                    console.log(interval)
+                    //console.log(interval)
                     var delta = interval.hired.length - interval.fired.length
-                    console.log(delta);
+                    var date = new Date(interval.date);
 
                     if(x==0){
+                        console.log('adding start count ' + startcount);
+                        console.log(interval)
                         delta += startcount;
+                        date = startTime;
                     }
 
                     results.push({
-                        day: new Date(interval.date),
+                        day: date,
                         count: delta
                     });
 
+                    if(x==0){
+                        console.log(results);
+                    }
+
                 }
 
-                results = results.sort(function(a,b){
-
-                    //return a.day.getTime() > b.day.getTime();
-                    a = new Date(a.day);
-                    b = new Date(b.day);
-                    return a<b ? -1 : a>b ? 1 : 0;
-                });
                 res.send(results);
                 db.close();
             });
