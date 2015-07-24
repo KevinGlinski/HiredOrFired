@@ -19,7 +19,7 @@ module.exports = function(pureCloudUsers, userDataStore, callback, endDate){
                 if(!foundUserInDataStore){
                     console.log("adding new user " + pureCloudUser.email);
                     if(!pureCloudUser.added){
-                        pureCloudUser.added = Date.now().getTime();
+                        pureCloudUser.added = Date.now();
                     }
 
                     pureCloudUser.removed = null;
@@ -37,11 +37,11 @@ module.exports = function(pureCloudUsers, userDataStore, callback, endDate){
                         userStoreUser.removed = endDate;
                     }
                     else{
-                        userStoreUser.removed = new Date().getTime();
+                        userStoreUser.removed = Date.now();
                     }
 
                     userDataStore.updateUser(userStoreUser);
-                    firedList.push(pureCloudUser);
+                    firedList.push(userStoreUser);
                 }
             }
 
