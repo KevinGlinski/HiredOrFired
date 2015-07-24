@@ -12,8 +12,8 @@ Vagrant.configure("2") do |config|
   config.vm.provision :shell do |s|
     s.inline = <<-SCRIPT
     echo I am stopping and removing all containers..
-    docker stop $(docker ps -a -q)
-    docker rm $(docker ps -a -q)
+    docker restart hiredorfired_core
+    docker restart hiredorfired_web
     SCRIPT
   end
 end
